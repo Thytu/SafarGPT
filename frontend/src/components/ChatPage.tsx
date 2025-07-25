@@ -345,7 +345,7 @@ const ChatPage = () => {
                 <div
                   className={`inline-block px-4 py-2 rounded-lg ${
                     msg.role === 'user'
-                      ? 'bg-blue-600 text-white whitespace-pre-wrap'
+                      ? 'bg-blue-600 text-white whitespace-pre-wrap text-left'
                       : 'bg-white border text-gray-800'
                   }`}
                 >
