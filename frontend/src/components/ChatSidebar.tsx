@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabaseClient';
 import SidebarToggleIcon from './icons/SidebarToggleIcon';
+import { useToast } from './ToastProvider';
 
 export interface ChatSummary {
   id: string;
@@ -27,7 +28,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, sel
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState<string>('');
   const [deleteTarget, setDeleteTarget] = useState<ChatSummary | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const addToast = useToast();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
 
   // Close dropdown when clicking outside
@@ -90,7 +92,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, sel
       if (updated) onChatRenamed?.({ ...updated, title: trimmed });
     } catch (err) {
       console.error(err);
-      alert('Rename failed');
+      addToast('Rename failed');
     } finally {
       setEditingId(null);
     }
@@ -103,7 +105,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, sel
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
-    setDeleting(true);
+    setDeletingId(deleteTarget.id);
     try {
       const token = await getAccessToken();
       const res = await fetch(`${backendUrl}/chat/${deleteTarget.id}`, {
@@ -118,9 +120,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, sel
       setDeleteTarget(null);
     } catch (err) {
       console.error(err);
-      alert('Delete failed');
+      addToast('Delete failed');
     } finally {
-      setDeleting(false);
+      setDeletingId(null);
     }
   };
 
@@ -241,7 +243,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, sel
       )}
     </aside>
     {deleteTarget && (
-      <div className="fixed inset-0 bg-black/20 backdrop-blur-[1px] flex items-center justify-center z-30" onClick={() => !deleting && setDeleteTarget(null)}>
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-[1px] flex items-center justify-center z-30" onClick={() => !deletingId && setDeleteTarget(null)}>
         <div className="bg-white rounded-lg shadow-lg p-6 w-80" onClick={(e) => e.stopPropagation()}>
           <h3 className="text-lg font-semibold mb-3">Delete chat?</h3>
           <p className="text-sm mb-6">This will delete "{deleteTarget.title || 'Untitled conversation'}".</p>
@@ -249,16 +251,16 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, sel
             <button
               className="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-100"
               onClick={() => setDeleteTarget(null)}
-              disabled={deleting}
+              disabled={deletingId !== null}
             >
               Cancel
             </button>
             <button
-              className={`px-3 py-1 text-sm rounded text-white ${deleting ? 'bg-red-400' : 'bg-red-600 hover:bg-red-700'}`}
+              className={`px-3 py-1 text-sm rounded text-white ${deletingId !== null ? 'bg-red-400' : 'bg-red-600 hover:bg-red-700'}`}
               onClick={confirmDelete}
-              disabled={deleting}
+              disabled={deletingId !== null}
             >
-              {deleting ? 'Deleting…' : 'Delete'}
+              {deletingId !== null ? 'Deleting…' : 'Delete'}
             </button>
           </div>
         </div>

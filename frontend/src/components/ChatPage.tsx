@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabaseClient';
 import { Link } from 'react-router-dom';
 import ChatSidebar from './ChatSidebar';
 import type { ChatSummary } from './ChatSidebar';
+import { useToast } from './ToastProvider';
 
 export type ChatMessage = {
   role: 'user' | 'assistant';
@@ -15,6 +16,7 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:3000/ap
 
 const ChatPage = () => {
   const { user, signOut } = useAuth();
+  const addToast = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -131,7 +133,7 @@ const ChatPage = () => {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to get response');
+      addToast('Failed to get response');
     } finally {
       setIsLoading(false);
     }

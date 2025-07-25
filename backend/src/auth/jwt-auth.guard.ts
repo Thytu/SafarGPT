@@ -8,6 +8,12 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+
+    // Allow CORS pre-flight requests without requiring auth headers
+    if (request.method === 'OPTIONS') {
+      return true;
+    }
+
     const authHeader = (request.headers['authorization'] || request.headers['Authorization']) as string | undefined;
     if (!authHeader) {
       return false;
