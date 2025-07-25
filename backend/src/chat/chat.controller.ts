@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards, UnauthorizedException, Param, ParseUUIDPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards, UnauthorizedException, Param, ParseUUIDPipe, Patch, Delete } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ChatService, ChatMessage } from './chat.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -101,5 +101,36 @@ export class ChatController {
     } finally {
       res.end();
     }
+  }
+
+  /** Rename a chat */
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  async renameChat(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('title') title: string,
+    @Req() req: Request,
+  ) {
+    const userId = (req as any).user?.sub;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    if (!title || typeof title !== 'string') {
+      throw new Error('title is required');
+    }
+    await this.chatService.renameChat(id, userId, title);
+    return { success: true };
+  }
+
+  /** Delete a chat */
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  async deleteChat(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
+    const userId = (req as any).user?.sub;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    await this.chatService.deleteChat(id, userId);
+    return { success: true };
   }
 } 

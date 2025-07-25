@@ -50,7 +50,7 @@ export class ChatService {
     if (options.userId) {
       // Derive a conversation title from the first user message (fallback to generic)
       const firstUserMsg = messages.find((m) => m.role === 'user') ?? messages[0];
-      const title = firstUserMsg?.content?.slice(0, 80) ?? 'New chat';
+      const title = firstUserMsg?.content?.slice(0, 25) ?? 'New chat';
 
       const { chatId } = await this.ensureChatRecord(options.chatId, options.userId, title);
 
@@ -156,7 +156,7 @@ export class ChatService {
     const model = options.model ?? 'gpt-4o';
 
     const firstUserMsg = messages.find((m) => m.role === 'user') ?? messages[0];
-    const title = firstUserMsg?.content?.slice(0, 80) ?? 'New chat';
+    const title = firstUserMsg?.content?.slice(0, 25) ?? 'New chat';
 
     const { chatId } = await this.ensureChatRecord(options.chatId, options.userId, title);
 
@@ -201,4 +201,33 @@ export class ChatService {
 
     return { chatId: data.id };
   }
-} 
+
+  async renameChat(chatId: string, userId: string, title: string): Promise<void> {
+    const { error } = await this.supabase
+      .getClient()
+      .from('chats')
+      .update({ title })
+      .eq('id', chatId)
+      .eq('user_id', userId);
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a chat (and cascaded messages) for the given user.
+   */
+  async deleteChat(chatId: string, userId: string): Promise<void> {
+    const { error } = await this.supabase
+      .getClient()
+      .from('chats')
+      .delete()
+      .eq('id', chatId)
+      .eq('user_id', userId);
+
+    if (error) {
+      throw error;
+    }
+  }
+}

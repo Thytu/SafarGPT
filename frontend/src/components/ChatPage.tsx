@@ -258,6 +258,19 @@ const ChatPage = () => {
             console.error(err);
           }
         }}
+        onChatDeleted={(id) => {
+          if (currentChat?.id === id) {
+            setCurrentChat(null);
+            setMessages([]);
+          }
+          setChatListVersion((v) => v + 1);
+        }}
+        onChatRenamed={(chat) => {
+          if (currentChat?.id === chat.id) {
+            setCurrentChat(chat);
+          }
+          setChatListVersion((v) => v + 1);
+        }}
       />
 
       {/* Main panel */}
