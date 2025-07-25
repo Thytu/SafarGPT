@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { supabase } from '../lib/supabaseClient';
+import SidebarToggleIcon from './icons/SidebarToggleIcon';
 
 export interface ChatSummary {
   id: string;
@@ -26,6 +27,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, sel
   const [editingValue, setEditingValue] = useState<string>('');
   const [deleteTarget, setDeleteTarget] = useState<ChatSummary | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -129,7 +131,17 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, sel
 
   return (
     <>
-    <aside className="w-64 border-r overflow-y-auto p-4 bg-white">
+    <aside className={`${collapsed ? 'w-8 p-2' : 'w-64 p-4'} border-r overflow-y-auto bg-white relative transition-all duration-200`}>
+      {/* Collapse / Expand button */}
+      <button
+        className="absolute top-2 right-2 p-1 hover:bg-gray-100 rounded"
+        onClick={() => setCollapsed(!collapsed)}
+        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        <SidebarToggleIcon/>
+      </button>
+      {!collapsed && (
+      <>
       <h2 className="text-lg font-semibold mb-4">Conversations</h2>
       {loading ? (
         <p>Loading…</p>
@@ -198,6 +210,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, sel
           ))}
           {chats.length === 0 && <p className="text-sm text-gray-500">No conversations yet.</p>}
         </ul>
+      )}
+      </>
       )}
     </aside>
     {deleteTarget && (
