@@ -265,6 +265,10 @@ const ChatPage = () => {
           }
           setChatListVersion((v) => v + 1);
         }}
+        onNewChat={() => {
+          setCurrentChat(null);
+          setMessages([]);
+        }}
         onChatRenamed={(chat) => {
           if (currentChat?.id === chat.id) {
             setCurrentChat(chat);

@@ -16,9 +16,10 @@ interface ChatSidebarProps {
   reloadKey?: number; // increments to trigger refetch
   onChatDeleted?: (chatId: string) => void;
   onChatRenamed?: (chat: ChatSummary) => void;
+  onNewChat?: () => void;
 }
 
-const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, selectedChatId, reloadKey, onChatDeleted, onChatRenamed }) => {
+const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, selectedChatId, reloadKey, onChatDeleted, onChatRenamed, onNewChat }) => {
   const { user } = useAuth();
   const [chats, setChats] = useState<ChatSummary[]>([]);
   const [loading, setLoading] = useState(false);
@@ -132,17 +133,42 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ backendUrl, onSelectChat, sel
   return (
     <>
     <aside className={`${collapsed ? 'w-8 p-2' : 'w-64 p-4'} border-r overflow-y-auto bg-white relative transition-all duration-200`}>
-      {/* Collapse / Expand button */}
-      <button
-        className="absolute top-2 right-2 p-1 hover:bg-gray-100 rounded"
-        onClick={() => setCollapsed(!collapsed)}
-        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        <SidebarToggleIcon/>
-      </button>
+      {/* Collapse / Expand button (absolute when collapsed) */}
+      {collapsed && (
+        <button
+          className="absolute top-2 right-2 p-1 hover:bg-gray-100 rounded"
+          onClick={() => setCollapsed(false)}
+          title="Expand sidebar"
+        >
+          <SidebarToggleIcon/>
+        </button>
+      )}
+
       {!collapsed && (
       <>
-      <h2 className="text-lg font-semibold mb-4">Conversations</h2>
+      {/* Header row with brand and collapse button */}
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-lg font-semibold">SafarGPT</span>
+        <button
+          className="p-1 hover:bg-gray-100 rounded"
+          onClick={() => setCollapsed(true)}
+          title="Collapse sidebar"
+        >
+          <SidebarToggleIcon/>
+        </button>
+      </div>
+      {/* New Chat button */}
+      <button
+        onClick={() => {
+          onNewChat?.();
+        }}
+        className="w-full mb-3 flex items-center justify-center gap-1 hover:bg-gray-100 text-black text-sm font-medium px-3 py-2 rounded shadow"
+      >
+        <span>＋</span>
+        <span>New Chat</span>
+      </button>
+
+      <p className="mb-4 text-gray-700">Chats</p>
       {loading ? (
         <p>Loading…</p>
       ) : (
